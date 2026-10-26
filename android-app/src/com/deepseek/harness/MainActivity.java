@@ -4553,13 +4553,13 @@ public class MainActivity extends Activity {
 
         navWorkItem = navItem(R.drawable.ic_nav_work, "工作", 0);
         navSettingsItem = navItem(R.drawable.ic_nav_settings, "设置", 1);
-        pill.addView(navWorkItem, new LinearLayout.LayoutParams(0, dp(52), 1f));
-        LinearLayout.LayoutParams slp = new LinearLayout.LayoutParams(0, dp(52), 1f);
+        pill.addView(navWorkItem, new LinearLayout.LayoutParams(dp(104), dp(48)));
+        LinearLayout.LayoutParams slp = new LinearLayout.LayoutParams(dp(104), dp(48));
         slp.leftMargin = dp(6);
         pill.addView(navSettingsItem, slp);
 
         LinearLayout.LayoutParams plp = new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+                LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
         plp.leftMargin = dp(36);
         plp.rightMargin = dp(36);
         bar.addView(pill, plp);
@@ -5358,28 +5358,31 @@ public class MainActivity extends Activity {
         Button b = new Button(this);
         b.setAllCaps(false);
         b.setText(label);
-        b.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f * conFontScale());   // M3 label large
-        b.setLetterSpacing(0.01f);
+        // M3 common button（filled / filled tonal）：40dp 高、labelLarge 14sp/500、字距 0.1sp、
+        // 左右 24dp 内边距、最小宽度 64dp、全圆角 20dp（高度一半 = 药丸）。见 m3.material.io/components/buttons/specs。
+        b.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f * conFontScale());
+        b.setLetterSpacing(0.007f);          // ≈ labelLarge 的 0.1sp
         b.setSingleLine(true);
         b.setEllipsize(android.text.TextUtils.TruncateAt.END);
-        b.setMinWidth(dp(primary ? 104 : 76));
-        b.setMinimumWidth(dp(primary ? 104 : 76));
+        b.setGravity(Gravity.CENTER);
+        b.setMinWidth(dp(64));
+        b.setMinimumWidth(dp(64));
         // v1.19.6 的兜底保留：父布局高度不够时按钮会被压扁、文字被裁掉。
-        b.setMinHeight(dp(44));
-        b.setMinimumHeight(dp(44));
-        b.setPadding(dp(24), dp(11), dp(24), dp(11));
+        b.setMinHeight(dp(40));
+        b.setMinimumHeight(dp(40));
+        b.setPadding(dp(24), 0, dp(24), 0);
         b.setIncludeFontPadding(false);
         // M3 平面按钮：层级靠色块而不是投影。
         try { b.setStateListAnimator(null); } catch (Throwable ignored) {}
         if (primary) {
-            // M3 filled：primary 底 + onPrimary 字 + 药丸形 + 状态层
+            // M3 filled：primary 底 + onPrimary 字
             b.setTextColor(m3(M3_ON_PRIMARY));
-            b.setBackground(m3Ripple(cPill(m3(M3_PRIMARY)), m3Alpha(m3(M3_ON_PRIMARY), 0x33), 999f));
+            b.setBackground(m3Ripple(cRound(m3(M3_PRIMARY), 20f), m3Alpha(m3(M3_ON_PRIMARY), 0x33), 20f));
         } else {
             // M3 filled tonal：secondaryContainer 底 + onSecondaryContainer 字
             b.setTextColor(m3(M3_ON_SECONDARY_CONTAINER));
-            b.setBackground(m3Ripple(cPill(m3(M3_SECONDARY_CONTAINER)),
-                    m3Alpha(m3(M3_ON_SECONDARY_CONTAINER), 0x22), 999f));
+            b.setBackground(m3Ripple(cRound(m3(M3_SECONDARY_CONTAINER), 20f),
+                    m3Alpha(m3(M3_ON_SECONDARY_CONTAINER), 0x22), 20f));
         }
         return b;
     }
@@ -5450,6 +5453,15 @@ public class MainActivity extends Activity {
         return lp;
     }
 
+    /** 按钮用：按内容宽度（M3 按钮不铺满整行），只给上边距。 */
+    private LinearLayout.LayoutParams cTopWrap(int topMargin) {
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        lp.topMargin = cGap(topMargin);
+        lp.gravity = Gravity.START;
+        return lp;
+    }
+
     private View cSep(int topMargin) {
         View v = new View(this);
         v.setBackgroundColor(m3Alpha(cLine(), 0x99));
@@ -5477,6 +5489,7 @@ public class MainActivity extends Activity {
         row.addView(cText("›", 16f, m3(M3_PRIMARY), false), chp);
         row.setBackground(m3Ripple(cRound(m3(M3_SURFACE_CONTAINER), 20),
                 m3Alpha(m3(M3_ON_SURFACE), 0x1F), 20f));
+        row.setTag("m3row");
         row.setOnClickListener(new View.OnClickListener() {
             @Override public void onClick(View v) { consolePage = page; renderConsole(); }
         });
@@ -5653,7 +5666,7 @@ public class MainActivity extends Activity {
         uiSimpleActionBtn.setOnClickListener(new View.OnClickListener() {
             @Override public void onClick(View v) { conSimplePrimaryAction(); }
         });
-        card.addView(uiSimpleActionBtn, cTop(cGap(14)));
+        card.addView(uiSimpleActionBtn, cTopWrap(cGap(14)));
         // 次要操作：重启 / 停止（只在引擎活着时可用）
         LinearLayout sub = new LinearLayout(this);
         sub.setOrientation(LinearLayout.HORIZONTAL);
@@ -5665,10 +5678,12 @@ public class MainActivity extends Activity {
         conEnStop.setOnClickListener(new View.OnClickListener() {
             @Override public void onClick(View v) { conStopEngine(); }
         });
-        sub.addView(conEnRestart, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
+        sub.addView(conEnRestart, new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
         if (bhHidden("restart")) conEnRestart.setVisibility(View.GONE);
         if (bhHidden("stop")) conEnStop.setVisibility(View.GONE);
-        LinearLayout.LayoutParams slp = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f);
+        LinearLayout.LayoutParams slp = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         slp.leftMargin = dp(8);
         sub.addView(conEnStop, slp);
         card.addView(sub, cTop(cGap(8)));
@@ -5805,6 +5820,51 @@ public class MainActivity extends Activity {
             col.addView(v, cTop(top));
             prev = id;
         }
+        styleConnectedRows(col);
+    }
+
+    // ==================== 连接式列表（M3 lists 的圆角规则） ====================
+    // 规范：同一组内容共用一个外轮廓——最上面一条只有上侧是大圆角、最下面一条只有下侧是大圆角，
+    // 中间首尾相接的那几条用小圆角（否则每条都变成独立大圆角卡片，视觉上像一堆按钮）。
+    private void styleConnectedRows(LinearLayout col) {
+        if (col == null) return;
+        int n = col.getChildCount();
+        int i = 0;
+        while (i < n) {
+            View v = col.getChildAt(i);
+            if (!"m3row".equals(v.getTag())) { i++; continue; }
+            int j = i;
+            while (j + 1 < n && "m3row".equals(col.getChildAt(j + 1).getTag())) j++;
+            int count = j - i + 1;
+            for (int k = i; k <= j; k++) {
+                View row = col.getChildAt(k);
+                boolean first = (k == i);
+                boolean last = (k == j);
+                float rTop = (count == 1 || first) ? 26f : 6f;
+                float rBottom = (count == 1 || last) ? 26f : 6f;
+                row.setBackground(m3Ripple(cRowBackground(m3(M3_SURFACE_CONTAINER), rTop, rBottom),
+                        m3Alpha(m3(M3_ON_SURFACE), 0x1F), 6f));
+                LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams) row.getLayoutParams();
+                if (lp != null) {
+                    lp.topMargin = (k == i) ? cGap(8) : 0;   // 组内相邻行贴在一起，只和组标题留 8dp
+                    row.setLayoutParams(lp);
+                }
+            }
+            i = j + 1;
+        }
+    }
+
+    /** 上/下不同圆角的形状（连接式列表的外侧大角 + 内侧小角）。 */
+    private android.graphics.drawable.GradientDrawable cRowBackground(int fill, float rTop, float rBottom) {
+        android.graphics.drawable.GradientDrawable g = new android.graphics.drawable.GradientDrawable();
+        g.setShape(android.graphics.drawable.GradientDrawable.RECTANGLE);
+        g.setColor(fill);
+        g.setCornerRadii(new float[]{
+                dp(Math.round(rTop)), dp(Math.round(rTop)),
+                dp(Math.round(rTop)), dp(Math.round(rTop)),
+                dp(Math.round(rBottom)), dp(Math.round(rBottom)),
+                dp(Math.round(rBottom)), dp(Math.round(rBottom))});
+        return g;
     }
 
     /** 分组小标题（方案 B 的三组：会话 / 系统 / 诊断）。M3E：labelLarge + 字距。 */
@@ -5934,6 +5994,7 @@ public class MainActivity extends Activity {
         row.addView(cText("›", 16f, m3(M3_PRIMARY), false), chp);
         row.setBackground(m3Ripple(cRound(m3(M3_SURFACE_CONTAINER), 20),
                 m3Alpha(m3(M3_ON_SURFACE), 0x1F), 20f));
+        row.setTag("m3row");
         row.setOnClickListener(new View.OnClickListener() {
             @Override public void onClick(View v) { conEnvDialog(); }
         });
@@ -6235,7 +6296,7 @@ public class MainActivity extends Activity {
         conExBtn.setOnClickListener(new View.OnClickListener() {
             @Override public void onClick(View v) { conExtractClick(); }
         });
-        box.addView(conExBtn, cTop(cGap(12)));
+        box.addView(conExBtn, cTopWrap(cGap(12)));
         return box;
     }
 
@@ -6323,7 +6384,7 @@ public class MainActivity extends Activity {
         impBtn.setOnClickListener(new View.OnClickListener() {
             @Override public void onClick(View v) { conBackupImport(); }
         });
-        box.addView(impBtn, cTop(cGap(8)));
+        box.addView(impBtn, cTopWrap(cGap(8)));
         return box;
     }
 
@@ -7122,7 +7183,7 @@ public class MainActivity extends Activity {
         impBtn.setOnClickListener(new View.OnClickListener() {
             @Override public void onClick(View v) { conBackupImport(); }
         });
-        wrap.addView(impBtn, cTop(cGap(8)));
+        wrap.addView(impBtn, cTopWrap(cGap(8)));
         return wrap;
     }
 

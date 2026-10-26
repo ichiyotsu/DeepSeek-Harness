@@ -6,8 +6,9 @@
 ![Stars](https://img.shields.io/github/stars/ichiyotsu/DSH)
 ![Release](https://img.shields.io/github/v/release/ichiyotsu/DSH)
 
-## 🆕 最新版本 0.2.1（2026-10-26）
+## 🆕 最新版本 0.2.2（2026-10-26）
 
+- **控制台列表按 M3 分组圆角规则**：一组内容共用外轮廓，组内首尾大圆角（26dp）、相接处小圆角（6dp）、行间距归零；按钮按 M3 common button 规格（40dp 高 / 20dp 圆角 / 24dp 内边距 / 14sp labelLarge），主操作按钮不再拉满整行；底栏收窄成内容宽度。
 - **底栏：工作 / 设置**（参考 TokiNote 的 FloatingNavBar）：左侧「工作」是 DSH WebView 前端，右侧「设置」是原生控制台（引擎 / 权限 / 插件 / 日志 / 主题 / 会话 / 自检）。选中项是 primary 实色药丸，未选是 surfaceContainerHigh 胶囊底，按压有回弹与触感；WebView 与底栏上下分栏，切换标签不重载聊天页（未启动引擎时点「工作」会提示先启动）。
 - 界面按 **Material Design 3 Expressive** 重构，色板以 DSH 品牌蓝 `#4D6BFE` 为种子生成（`SchemeContent`，light/dark 全角色）：
 
