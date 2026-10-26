@@ -198,6 +198,16 @@ public class MainActivity extends Activity {
     private LinearLayout consoleBody;              // 当前页内容容器
     private int consolePage = 0;                   // 0 控制台 / 1 权限 / 2 插件 / 3 日志
     private boolean consoleVisible = false;
+
+    // ---- v0.2.1 底栏：左「工作」= WebView（DSH 前端）/ 右「设置」= 控制台（服务器设置）----
+    // 布局：shell = [engineRoot(weight=1)] + [bottomNav]，WebView 与控制台都在上半区，
+    // 底栏常驻，两个标签之间用显隐切换（WebView 不重复 loadUrl，避免聊天页被重载）。
+    private LinearLayout navBar;
+    private LinearLayout navWorkItem, navSettingsItem;
+    private ImageView navWorkIcon, navSettingsIcon;
+    private TextView navWorkLabel, navSettingsLabel;
+    private int navTab = -1;
+    private boolean webLoaded = false;             // WebView 是否已经加载过首页
     private boolean consoleDetailOpen = false;      //「已解压」那一行是否展开
     private boolean extracting = false;            // 正在解压（控制台进度）
     private boolean extractOnlyMode = false;       // true:本次只解压，不起引擎
@@ -645,7 +655,15 @@ public class MainActivity extends Activity {
         bp.gravity = Gravity.CENTER;
         root.addView(box, bp);
 
-        setContentView(root);
+        // v0.2.1：引擎容器 + 底栏上下分栏。底栏常驻，切页只换显隐。
+        LinearLayout shell = new LinearLayout(this);
+        shell.setOrientation(LinearLayout.VERTICAL);
+        shell.setBackgroundColor(chromeBg());
+        shell.addView(root, new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, 0, 1f));
+        shell.addView(buildBottomNav(), new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+        setContentView(shell);
     }
 
     /** 退出确认对话框（浮动按钮与系统返回键共用） */
@@ -4301,6 +4319,7 @@ public class MainActivity extends Activity {
                     progressBar.setVisibility(View.GONE);
                 }
                 webView.loadUrl(webHomeUrl());
+                webLoaded = true;
             }
         });
     }
@@ -4509,10 +4528,131 @@ public class MainActivity extends Activity {
         } catch (Throwable t) { return null; }
     }
 
+    // ==================== v0.2.1 底栏（工作 / 设置） ====================
+    //
+    // 设计参考 TokiNote 的 FloatingNavBar：一颗漂浮的药丸容器 + 选中项 primary 实色药丸，
+    // 图标 + 文字、按压回弹、触感反馈；这里没有 Compose，用 LinearLayout + drawable 手写。
+    private LinearLayout buildBottomNav() {
+        LinearLayout bar = new LinearLayout(this);
+        bar.setOrientation(LinearLayout.HORIZONTAL);
+        bar.setGravity(Gravity.CENTER);
+        int navInset = 0;
+        try {
+            int id = getResources().getIdentifier("navigation_bar_height", "dimen", "android");
+            if (id > 0) navInset = getResources().getDimensionPixelSize(id);
+        } catch (Throwable ignored) {}
+        bar.setPadding(dp(20), dp(10), dp(20), dp(10) + Math.min(navInset, dp(18)));
+        bar.setBackgroundColor(cBg());
+
+        LinearLayout pill = new LinearLayout(this);
+        pill.setOrientation(LinearLayout.HORIZONTAL);
+        pill.setGravity(Gravity.CENTER);
+        pill.setPadding(dp(6), dp(6), dp(6), dp(6));
+        pill.setBackground(cRound(m3(M3_SURFACE_CONTAINER_HIGH), 30));
+        pill.setElevation(dp(3));
+
+        navWorkItem = navItem(R.drawable.ic_nav_work, "工作", 0);
+        navSettingsItem = navItem(R.drawable.ic_nav_settings, "设置", 1);
+        pill.addView(navWorkItem, new LinearLayout.LayoutParams(0, dp(52), 1f));
+        LinearLayout.LayoutParams slp = new LinearLayout.LayoutParams(0, dp(52), 1f);
+        slp.leftMargin = dp(6);
+        pill.addView(navSettingsItem, slp);
+
+        LinearLayout.LayoutParams plp = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        plp.leftMargin = dp(36);
+        plp.rightMargin = dp(36);
+        bar.addView(pill, plp);
+        navBar = bar;
+        navSelect(0);
+        return bar;
+    }
+
+    private LinearLayout navItem(int iconRes, String text, final int tab) {
+        LinearLayout item = new LinearLayout(this);
+        item.setOrientation(LinearLayout.HORIZONTAL);
+        item.setGravity(Gravity.CENTER);
+        ImageView icon = new ImageView(this);
+        icon.setImageResource(iconRes);
+        item.addView(icon, new LinearLayout.LayoutParams(dp(20), dp(20)));
+        TextView label = new TextView(this);
+        label.setText(text);
+        label.setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f * conFontScale());
+        label.setTypeface(android.graphics.Typeface.create("sans-serif-medium", android.graphics.Typeface.NORMAL));
+        label.setIncludeFontPadding(false);
+        LinearLayout.LayoutParams tlp = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        tlp.leftMargin = dp(8);
+        item.addView(label, tlp);
+        if (tab == 0) { navWorkIcon = icon; navWorkLabel = label; }
+        else { navSettingsIcon = icon; navSettingsLabel = label; }
+        item.setOnClickListener(new View.OnClickListener() {
+            @Override public void onClick(View v) {
+                try { v.performHapticFeedback(android.view.HapticFeedbackConstants.LONG_PRESS); } catch (Throwable ignored) {}
+                v.animate().cancel();
+                v.setScaleX(0.94f);
+                v.setScaleY(0.94f);
+                v.animate().scaleX(1f).scaleY(1f).setDuration(220).setInterpolator(m3Spring()).start();
+                navGo(tab);
+            }
+        });
+        return item;
+    }
+
+    /** 切换底栏选中态（不动页面，只改视觉）。 */
+    private void navSelect(int tab) {
+        navTab = tab;
+        if (navWorkItem == null) return;
+        paintNavItem(navWorkItem, navWorkIcon, navWorkLabel, tab == 0);
+        paintNavItem(navSettingsItem, navSettingsIcon, navSettingsLabel, tab == 1);
+    }
+
+    private void paintNavItem(LinearLayout item, ImageView icon, TextView label, boolean selected) {
+        int fg = selected ? m3(M3_ON_PRIMARY) : m3(M3_ON_SURFACE_VARIANT);
+        item.setBackground(selected ? cPill(m3(M3_PRIMARY)) : null);
+        if (icon != null) icon.setColorFilter(fg);
+        if (label != null) label.setTextColor(fg);
+    }
+
+    /** 底栏点击：0=工作（WebView）1=设置（控制台）。 */
+    private void navGo(int tab) {
+        if (tab == 1) {
+            showConsole();
+            navSelect(1);
+            return;
+        }
+        boolean running = conEngineRunning() || engineTokenUrl != null;
+        if (!running && !webLoaded) {
+            conToast("引擎还没启动，先在「设置」里启动");
+            showConsole();
+            navSelect(1);
+            return;
+        }
+        hideSplashBits();
+        consoleVisible = false;
+        if (consoleLayer != null) consoleLayer.setVisibility(View.GONE);
+        if (consoleLayerBox != null) consoleLayerBox.setVisibility(View.GONE);
+        if (conTick != null) conTick.removeCallbacks(consoleTick);
+        if (!webLoaded) enterMainUi();
+        navSelect(0);
+    }
+
+    /** 启动浮层（logo / 品牌 / 状态 / 进度条）收起来。 */
+    private void hideSplashBits() {
+        if (statusView != null) statusView.setVisibility(View.GONE);
+        if (splashLogo != null) splashLogo.setVisibility(View.GONE);
+        if (splashBrand != null) splashBrand.setVisibility(View.GONE);
+        if (progressBar != null) {
+            progressBar.setIndeterminate(false);
+            progressBar.setVisibility(View.GONE);
+        }
+    }
+
     private void showConsole() {
         if (consoleLayer == null) buildConsoleLayer();
         if (consoleLayer == null) { startEngine(); return; } // 兜底：控制台建不出来就走老路
         consoleVisible = true;
+        navSelect(1);
         if (consoleLayerBox != null) consoleLayerBox.setVisibility(View.VISIBLE);
         consoleLayer.setVisibility(View.VISIBLE);
         if (engineRoot != null) engineRoot.bringChildToFront(consoleLayerBox != null ? consoleLayerBox : consoleLayer);
@@ -8451,6 +8591,7 @@ public class MainActivity extends Activity {
 
     private void enterMainUi() {
         consoleVisible = false;
+        navSelect(0);
         if (consoleLayer != null) consoleLayer.setVisibility(View.GONE);
         if (consoleLayerBox != null) consoleLayerBox.setVisibility(View.GONE);   // v1.17.4:背景图一起收
         if (conTick != null) conTick.removeCallbacks(consoleTick);

@@ -1,3 +1,17 @@
+## v0.2.1（2026-10-26）
+
+- **新增底栏（工作 / 设置）**，参考 TokiNote 的 `FloatingNavBar`：
+  - 布局改成上下分栏：`engineRoot`（WebView + 控制台覆盖层）在上，底栏在下常驻；
+    WebView 视口随之缩短，DSH 前端自己的输入框不再被底栏压住。
+  - 左「工作」= WebView；右「设置」= 原生控制台（引擎 / 权限 / 插件 / 日志 / 主题 /
+    会话 / 自检这些服务器侧设置）。
+  - 视觉：漂浮药丸容器 `surfaceContainerHigh` + 30dp 圆角 + 3dp 投影；选中项 primary 实色药丸、
+    图标与文字变 `onPrimary`；按压 0.94 缩放 + overshoot 回弹 + 触感反馈。
+  - 行为：切换标签只显隐不重载（`webLoaded` 标记），聊天页不再每次切回来都重新 loadUrl；
+    引擎未启动时点「工作」提示先去设置启动，并自动停在设置页。
+  - 新增 `res/drawable/ic_nav_work.xml`、`ic_nav_settings.xml` 两个矢量图标。
+- 版本号 **0.2.1**（`versionCode` 3）。
+
 ## v0.2.0（2026-10-26）
 
 - **界面按 Material Design 3 Expressive 重构**（控制台 + WebView 两层）：

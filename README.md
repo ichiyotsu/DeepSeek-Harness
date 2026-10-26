@@ -6,9 +6,10 @@
 ![Stars](https://img.shields.io/github/stars/ichiyotsu/DSH)
 ![Release](https://img.shields.io/github/v/release/ichiyotsu/DSH)
 
-## 🆕 最新版本 0.2.0（2026-10-26）
+## 🆕 最新版本 0.2.1（2026-10-26）
 
-界面按 **Material Design 3 Expressive** 重构，色板以 DSH 品牌蓝 `#4D6BFE` 为种子生成（`SchemeContent`，light/dark 全角色）：
+- **底栏：工作 / 设置**（参考 TokiNote 的 FloatingNavBar）：左侧「工作」是 DSH WebView 前端，右侧「设置」是原生控制台（引擎 / 权限 / 插件 / 日志 / 主题 / 会话 / 自检）。选中项是 primary 实色药丸，未选是 surfaceContainerHigh 胶囊底，按压有回弹与触感；WebView 与底栏上下分栏，切换标签不重载聊天页（未启动引擎时点「工作」会提示先启动）。
+- 界面按 **Material Design 3 Expressive** 重构，色板以 DSH 品牌蓝 `#4D6BFE` 为种子生成（`SchemeContent`，light/dark 全角色）：
 
 - **原生控制台**：完整 M3 角色令牌（surface 五级 / container / outline）、Expressive 圆角刻度（12 / 18 / 22 / 26 / 36）、不对称圆角卡片（30/22/30/22）、药丸按钮（filled `primary` / filled-tonal `secondaryContainer`）+ 状态层 ripple、胶囊开关（选中 `secondaryContainer` / 未选描边）、56dp 触达行、M3 字阶（12/13/14/16 + medium 字重）、surfaceContainer 分层替代描边。
 - **WebView 主界面**：注入 M3E 令牌并映射到 DSH 前端自己的 `--dsw-alias-*` / `--dsw-radius-*` / `--dsw-elevation-*`，按钮药丸化、输入框 18dp、卡片 26dp、M3 standard / emphasized / spring 三档动效（只改样式，不改结构）。
