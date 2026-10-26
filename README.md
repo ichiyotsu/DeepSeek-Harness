@@ -2,23 +2,23 @@
 
 > 把 DeepSeek Harness（DSH）打包成**可直接安装的 Android APK** —— 装上就能用，还能让 AI **免 Root 真正操作手机**。
 
-![License](https://img.shields.io/github/license/woaiys3/deepseek-harness-android-app)
-![Stars](https://img.shields.io/github/stars/woaiys3/deepseek-harness-android-app)
-![Release](https://img.shields.io/github/v/release/woaiys3/deepseek-harness-android-app)
+![License](https://img.shields.io/github/license/ichiyotsu/DSH)
+![Stars](https://img.shields.io/github/stars/ichiyotsu/DSH)
+![Release](https://img.shields.io/github/v/release/ichiyotsu/DSH)
 
-## 🆕 最新版本 v1.20.1（2026-10-18）
+## 🆕 最新版本 0.1.0（2026-10-26）
 
-本版在 v1.20.0（内核 **0.2.1-rc.2**）基础上，把**五个自研插件**逐个走完「真实使用 → 让设备上的 AI 提 3 条改进 → 采纳/不采纳 → 改 → 重编 → 真机验证」闭环：
+本仓库自 0.1.0 起把三条产品线的名字与版本号固定下来，并用本仓库源码自行构建、签名发布：
 
-- **AI 浏览器**：`snapshot{includeText}` 附带可见文本；`click` 直接回 `newText`；`fromGeneration/toGeneration` 支持真差分；`read` 命中输入框回 `tag/type/value/placeholder`；`type` 回 `via/dispatched`。
-- **android**：`overlay` 回真实窗口可见性；`input` 回注入坐标/屏幕/前台包且越界明确失败；`package`/`setting` 结构化返回。
-- **shizuku**：`setting_app` 增加 `action=get/put` 与 `oldValue/newValue`；`notify` 回 `posted/visible/evidence`。
-- **accessibility**：`a11y_status` 回结构化状态（running / 服务组件 / 前台应用 / 可读控件数 / 读屏·手势·截图能力）；`tap` 回命中信息（`matchedText/bounds/nodeIndex/clickableAncestor`）与 `pageChanged/newTitle`；`scroll/swipe` 回 `changed/atEdge` —— 「已经到底」不再被误判成「手势失效」。
-- **vscreen**：`launch` 回 `package/component/displayId`，并用启动前后截图 sha256 给 `screenChanged`（命令成功但画面没变会被如实指出）；`see` 支持 `waitMs` 等待首帧并按真实状态回 `errorCode`（`no_display` / `not_rendered` / `no_frame`）；`create` 接受 `orientation=0/1/"0"/portrait` 并回 displayId/尺寸/dpi；`key` 支持 `KEYCODE_BACK` 等别名。
-- **会话列表恢复**：兼容内核 0.2.1 的 `session.v4.jsonl.zstd`（此前控制台「会话管理 / 会话修复」显示 0 条会话，数据其实都在）。
+| 产品线 | 名称 | 版本号 | 包名 | 引擎端口 | 数据目录 |
+|---|---|---|---|---|---|
+| 正式版 | DSH | **0.1.0** | `com.deepseek.harness` | 3080 | `/sdcard/DeepSeekHarness/` |
+| 共存版（测试版） | DSH | **0.1.1-beta** | `com.deepseek.harness.beta` | 3082 | `/sdcard/DeepSeekHarnessLite/` |
+| 兼容版 | DSH | **0.1.1-And** | `com.deepseek.harness.compat` | 3084 | `/sdcard/DeepSeekHarnessCompat/` |
 
-**验证**：三套包 `verify-v1193.sh` 各 **109 PASS / 0 FAIL**；official 全量回归 **31 步 OK / 0 步 FAIL，判据合计 772 PASS / 0 FAIL**。
-下载与完整说明见 [Releases](https://github.com/woaiys3/deepseek-harness-android-app/releases)。
+- **版本号即批次**：同一版本号的三套包一起发；版本号不同就不塞进同一个 Release。本次 `0.1.0` 只含正式版，`0.1.1` 批（`-beta` + `-And`）确认后一起发。
+- 本次 APK 由本仓库源码构建（内核 `@deepseek-ai/dsh` **0.2.1-rc.2**，与上游 v1.20.1 同代），功能与 v1.20.1 一致，仅品牌、版本号与签名不同。
+- ⚠️ **签名换了**：自 0.1.0 起使用本仓库自己的发布密钥（`CN=DSH`）。装过上游 1.x 的设备**必须先卸载旧版**再装（签名不同无法覆盖升级，卸载会丢 App 私有目录，外置的 `/sdcard/DeepSeekHarness/` 数据仍在）。
 
 ## ✨ 核心亮点
 
@@ -150,20 +150,14 @@
 
 ## 📦 安装
 
-下载 [Releases](https://github.com/woaiys3/deepseek-harness-android-app/releases) 里的 APK 安装即可：
+下载 [Releases](https://github.com/ichiyotsu/DSH/releases) 里的 APK 安装即可：
 
-- **`DeepSeekHarness.apk`（正式版，推荐）**：包名 `com.deepseek.harness`，从旧版本同签名升级
-- **`DeepSeekHarnessLite.apk`（Lite 共存版）**：包名 `com.deepseek.harness.beta`（端口 3082），与正式版完全独立、可同时安装；数据独立在 `/sdcard/DeepSeekHarnessLite/`，API Key 需单独填
-- **`DeepSeekHarnessCompat.apk`（兼容版）**：包名 `com.deepseek.harness.compat`（端口 3084），**内置 GeckoView（不依赖系统 WebView）**，老设备可用；体积约 250MB、要求 **Android 8.0（API 26）**及以上
+- **`DSH-0.1.0.apk`（正式版，推荐）**：包名 `com.deepseek.harness`（端口 3080），日常用这一套
+- **`DSH-0.1.1-beta.apk`（共存版 / 测试版）**：包名 `com.deepseek.harness.beta`（端口 3082），与正式版完全独立、可同时安装；数据独立在 `/sdcard/DeepSeekHarnessLite/`，API Key 需单独填
+- **`DSH-0.1.1-And.apk`（兼容版）**：包名 `com.deepseek.harness.compat`（端口 3084），**内置 GeckoView（不依赖系统 WebView）**，老设备可用；体积约 250MB、要求 **Android 8.0（API 26）**及以上
 
-> ⚠️ **从任何旧版本升级，请直接装 v1.20.0**（内核已升到 **0.2.1-rc.2**）：
-> ① **内核 0.2.1-rc.2**（旧法重建，16 个补丁全部合并；终端协议换成上游新的 attach 双向流，界面无感）；
-> ② **#44「插件安装失败 / 没有写入权限」真根因修掉** —— 内置 git 读 Termux 的 gitconfig 触发 EACCES；
-> ③ **#53 并发 fork 重复会话** —— 同一（会话 + 位置）的 fork 5 秒内只建一个；
-> ④ **#54 悬浮球动作可配置** —— 单击 / 长按 / 双击 可绑 打开应用 / 建虚拟屏 / 销毁 / 收起；
-> ⑤ **补齐 Lite / 兼容版的悬浮窗图标主题化**（此前只有正式版有）。
-> **覆盖安装不会丢配置**（模型/供应商、API Key、会话、插件都保留）；同签名可直接覆盖，无需卸载。
-> ⚠️ versionCode **57**（上一版 56）：覆盖安装**不会自动重新解压**，建议装完在控制台「系统」→「运行环境」→「重新解压」点一次。
+> ⚠️ **签名换了，第一次装 0.1.0 要先卸旧版**：本仓库自 0.1.0 起用独立发布密钥（`CN=DSH`），与上游 1.x 的签名不同，装过上游版本的设备无法覆盖升级。卸载只清 App 私有目录，外置的 `/sdcard/DeepSeekHarness/`（会话、插件、补丁）会保留，重装后在控制台把「运行环境」指到外部目录即可继续用。
+> 之后同签名的 0.1.x 可直接覆盖安装，配置、会话、插件都保留。
 > 完整变更见 [CHANGES.md](CHANGES.md)。
 
 > ℹ️ 内核仍是 **DSH 0.2.0-rc.2**，并**移除了自研定时任务**（0.2.0 内核自带 `@deepseek-ai/dsh-schedule`，到点作为 follow-up 投递回原会话，可在 控制台 →「插件」页启用）。v1.17.1 另修了两个社区报告的缺陷：虚拟屏入口闪退（[#36](https://github.com/woaiys3/deepseek-harness-android-app/issues/36)）、平板分屏界面白闪（[#37](https://github.com/woaiys3/deepseek-harness-android-app/issues/37)）。
