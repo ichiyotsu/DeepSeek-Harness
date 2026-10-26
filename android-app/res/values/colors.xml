@@ -13,18 +13,18 @@
     <color name="accent_brand">#4D6BFE</color>
 
     <!-- 壳背景（深色主题 / 浅色主题；styles.xml 的 windowBackground 也引用这里） -->
-    <color name="shell_bg_dark">#0B0F1A</color>
-    <color name="shell_bg_light">#F7F8FB</color>
+    <color name="shell_bg_dark">#12131B</color>
+    <color name="shell_bg_light">#FBF8FF</color>
 
     <!-- 壳卡片/次级容器背景（控制台卡片、输入框底等） -->
-    <color name="shell_card_dark">#161C2A</color>
-    <color name="shell_card_light">#FFFFFF</color>
+    <color name="shell_card_dark">#1A1B24</color>
+    <color name="shell_card_light">#F4F2FF</color>
 
     <!-- 壳文字：主文字 / 次级文字（各分深色主题、浅色主题两套） -->
-    <color name="text_on_dark">#E6EDF3</color>
-    <color name="text_on_light">#1F2328</color>
-    <color name="sub_on_dark">#8B98A9</color>
-    <color name="sub_on_light">#6B7280</color>
+    <color name="text_on_dark">#E2E1EE</color>
+    <color name="text_on_light">#1A1B24</color>
+    <color name="sub_on_dark">#C4C5D8</color>
+    <color name="sub_on_light">#444655</color>
 
     <!-- 语义色（不分深浅主题） -->
     <color name="status_green">#1F9D6B</color>

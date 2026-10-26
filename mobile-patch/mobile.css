@@ -413,3 +413,168 @@ input[type="search"] {
     min-height: 0 !important;
   }
 }
+
+/* ============================================================
+   M3 Expressive 设计令牌（DSH 蓝 #4D6BFE 种子，SchemeContent 生成）
+   ------------------------------------------------------------
+   只覆盖 DSH 前端自己的 alias / radius / elevation 变量与少量通用控件，
+   不改 DOM、不改结构；类名用 [class*="_名字_"] 的属性选择器，前端换 hash 也不失效。
+   颜色：完整 M3 角色（surface 五级 / container / outline）
+   形状：Expressive 圆角刻度 8 / 12 / 18 / 26 / 36
+   动效：M3 standard + expressive spring 缓动
+   ============================================================ */
+:root {
+  --m3-primary: #133BD3;
+  --m3-on-primary: #FFFFFF;
+  --m3-primary-container: #4766F9;
+  --m3-secondary: #4E5A99;
+  --m3-secondary-container: #B6C0FF;
+  --m3-on-secondary-container: #232F6C;
+  --m3-tertiary: #87139A;
+  --m3-tertiary-container: #B244C2;
+  --m3-error: #BA1A1A;
+  --m3-error-container: #FFDAD6;
+  --m3-on-error-container: #410002;
+  --m3-surface: #FBF8FF;
+  --m3-on-surface: #1A1B24;
+  --m3-on-surface-variant: #444655;
+  --m3-surface-lowest: #FFFFFF;
+  --m3-surface-low: #F4F2FF;
+  --m3-surface-container: #EEEDF9;
+  --m3-surface-high: #E8E7F3;
+  --m3-surface-highest: #E2E1EE;
+  --m3-outline: #747687;
+  --m3-outline-variant: #C4C5D8;
+  --m3-primary-hover: #3555DB;
+  --m3-primary-active: #0F32BD;
+  --m3-shape-xs: 8px;
+  --m3-shape-sm: 12px;
+  --m3-shape-md: 18px;
+  --m3-shape-lg: 26px;
+  --m3-shape-xl: 36px;
+  --m3-ease-standard: cubic-bezier(.2, 0, 0, 1);
+  --m3-ease-emphasized: cubic-bezier(.05, .7, .1, 1);
+  --m3-ease-spring: cubic-bezier(.34, 1.56, .64, 1);
+  --m3-fast: 140ms;
+  --m3-medium: 240ms;
+  --m3-slow: 380ms;
+}
+[data-ds-dark-theme] {
+  --m3-primary: #BAC3FF;
+  --m3-on-primary: #00208E;
+  --m3-primary-container: #4261F4;
+  --m3-secondary: #BAC3FF;
+  --m3-secondary-container: #2F3B78;
+  --m3-on-secondary-container: #CCD2FF;
+  --m3-tertiary: #FAABFF;
+  --m3-tertiary-container: #AF41BF;
+  --m3-error: #FFB4AB;
+  --m3-error-container: #93000A;
+  --m3-on-error-container: #FFDAD6;
+  --m3-surface: #12131B;
+  --m3-on-surface: #E2E1EE;
+  --m3-on-surface-variant: #C4C5D8;
+  --m3-surface-lowest: #0C0E16;
+  --m3-surface-low: #1A1B24;
+  --m3-surface-container: #1E1F28;
+  --m3-surface-high: #282932;
+  --m3-surface-highest: #33343E;
+  --m3-outline: #8E8FA1;
+  --m3-outline-variant: #444655;
+  --m3-primary-hover: #CDD4FF;
+  --m3-primary-active: #A7B1F5;
+}
+
+/* ---------- 颜色角色 → DSH alias ---------- */
+:root,
+[data-ds-dark-theme] {
+  --dsw-alias-bg-base: var(--m3-surface) !important;
+  --dsw-alias-bg-layer-1: var(--m3-surface-low) !important;
+  --dsw-alias-bg-layer-2: var(--m3-surface-container) !important;
+  --dsw-alias-bg-layer-3: var(--m3-surface-high) !important;
+  --dsw-alias-bg-layer-4: var(--m3-surface-highest) !important;
+  --dsw-alias-label-primary: var(--m3-on-surface) !important;
+  --dsw-alias-label-secondary: var(--m3-on-surface-variant) !important;
+  --dsw-alias-label-tertiary: var(--m3-outline) !important;
+  --dsw-alias-label-caption: var(--m3-outline) !important;
+  --dsw-alias-label-dimmed: var(--m3-outline) !important;
+  --dsw-alias-label-error: var(--m3-error) !important;
+  --dsw-alias-label-primary-foreground: var(--m3-surface) !important;
+  --dsw-alias-border-l1: var(--m3-outline-variant) !important;
+  --dsw-alias-border-l2: var(--m3-outline-variant) !important;
+  --dsw-alias-border-l3: var(--m3-outline) !important;
+  --dsw-alias-border-l4: var(--m3-outline) !important;
+  --dsw-alias-brand-primary: var(--m3-primary) !important;
+  --dsw-alias-brand-primary-hover: var(--m3-primary-hover) !important;
+  --dsw-alias-brand-primary-active: var(--m3-primary-active) !important;
+  --dsw-alias-button-primary-fill: var(--m3-primary) !important;
+  --dsw-alias-button-primary-hover: var(--m3-primary-hover) !important;
+  --dsw-alias-button-ghost-active-fill: var(--m3-surface-high) !important;
+  --dsw-alias-button-ghost-active-border: var(--m3-outline-variant) !important;
+  --dsw-alias-button-tool-bar-fill: var(--m3-surface-high) !important;
+  --dsw-alias-button-tool-bar-hover: var(--m3-surface-highest) !important;
+  --dsw-alias-interactive-bg-hover: var(--m3-surface-high) !important;
+  --dsw-alias-interactive-bg-active: var(--m3-surface-highest) !important;
+  --dsw-alias-link: var(--m3-primary) !important;
+  --dsw-alias-markdown-inline-code: var(--m3-surface-high) !important;
+  --dsw-alias-markdown-code-block: var(--m3-surface-lowest) !important;
+  --dsw-alias-markdown-code-block-banner: var(--m3-surface-high) !important;
+  --dsw-alias-menu-surface-fill: var(--m3-surface-high) !important;
+  --dsw-alias-menu-group-header-fill: var(--m3-surface-high) !important;
+  --dsw-alias-menu-icon: var(--m3-on-surface-variant) !important;
+  --dsw-alias-toast-bg: var(--m3-inverse-surface, #2F3039) !important;
+  --dsw-alias-tooltip-bg: var(--m3-surface-highest) !important;
+  --dsw-alias-tooltip-key-bg: var(--m3-surface-low) !important;
+  --dsw-alias-scrollbar-bg-l2: var(--m3-outline-variant) !important;
+  --dsw-alias-scrollbar-hover-l2: var(--m3-outline) !important;
+  --dsw-alias-switch-thumb: var(--m3-surface-lowest) !important;
+  --dsw-alias-state-error-primary: var(--m3-error) !important;
+  --dsw-alias-state-warn-label: var(--m3-tertiary) !important;
+  --dsw-focus-ring-color: var(--m3-primary) !important;
+}
+
+/* ---------- 形状刻度：Expressive 更圆的圆角 ---------- */
+:root,
+[data-ds-dark-theme] {
+  --dsw-radius-xs: var(--m3-shape-xs) !important;
+  --dsw-radius-sm: var(--m3-shape-sm) !important;
+  --dsw-radius-md: var(--m3-shape-md) !important;
+  --dsw-radius-lg: var(--m3-shape-lg) !important;
+  --dsw-radius-panel: var(--m3-shape-xl) !important;
+}
+
+/* ---------- 高度：M3 的低对比软投影 ---------- */
+:root,
+[data-ds-dark-theme] {
+  --dsw-elevation-soft: 0 1px 2px rgba(0, 0, 0, .10), 0 1px 3px 1px rgba(0, 0, 0, .06) !important;
+  --dsw-elevation-panel: 0 1px 3px rgba(0, 0, 0, .12), 0 4px 8px 3px rgba(0, 0, 0, .06) !important;
+  --dsw-elevation-prominent: 0 2px 6px rgba(0, 0, 0, .14), 0 8px 16px 4px rgba(0, 0, 0, .08) !important;
+}
+
+/* ---------- 组件：药丸按钮 / 圆角输入 / M3 动效 ---------- */
+[class*="_button_"],
+[class*="_btn_"] {
+  border-radius: 999px !important;
+  transition:
+    background-color var(--m3-fast) var(--m3-ease-standard),
+    color var(--m3-fast) var(--m3-ease-standard),
+    transform var(--m3-fast) var(--m3-ease-spring) !important;
+}
+[class*="_button_"]:active,
+[class*="_btn_"]:active {
+  transform: scale(.96);
+}
+[class*="_input_"],
+[class*="_composer_"] textarea,
+textarea {
+  border-radius: var(--m3-shape-md) !important;
+}
+[class*="_card_"],
+[class*="_panel_"] {
+  border-radius: var(--m3-shape-lg) !important;
+  transition: background-color var(--m3-medium) var(--m3-ease-emphasized) !important;
+}
+[class*="_item_"],
+[class*="_row_"] {
+  transition: background-color var(--m3-fast) var(--m3-ease-standard) !important;
+}

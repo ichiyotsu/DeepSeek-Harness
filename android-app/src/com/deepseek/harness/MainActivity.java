@@ -395,7 +395,7 @@ public class MainActivity extends Activity {
         });
 
         statusView = new TextView(this);
-        statusView.setText("正在启动 DeepSeek Harness...");
+        statusView.setText("正在启动 DSH...");
         statusView.setTextColor(cSub());
         statusView.setTextSize(TypedValue.COMPLEX_UNIT_PX, getResources().getDimension(R.dimen.text_body));
         statusView.setGravity(Gravity.CENTER);
@@ -616,7 +616,7 @@ public class MainActivity extends Activity {
 
         // 品牌名
         splashBrand = new TextView(this);
-        splashBrand.setText("DeepSeek Harness");
+        splashBrand.setText("DSH");
         splashBrand.setTextColor(cText());
         splashBrand.setTextSize(TypedValue.COMPLEX_UNIT_PX, getResources().getDimension(R.dimen.text_title));
         splashBrand.setTypeface(null, android.graphics.Typeface.BOLD);
@@ -652,7 +652,7 @@ public class MainActivity extends Activity {
     private void confirmExit() {
         // v1.13.12 文案纠偏：退出只是关掉本界面，引擎 node 进程是独立子进程，会在后台继续运行
         // （这正是"手机当服务器"的设计意图，不需要停）。旧文案"服务器将停止运行"与实际行为不符。
-        conDialog("退出 DeepSeek Harness", "确定要退出吗？界面会关闭，服务器将在后台继续运行。", "退出", new Runnable() {
+        conDialog("退出 DSH", "确定要退出吗？界面会关闭，服务器将在后台继续运行。", "退出", new Runnable() {
             @Override public void run() {
                 stopKeepAliveService(); // 用户主动退出：停止保活服务
                 finish();
@@ -834,12 +834,12 @@ public class MainActivity extends Activity {
     }
     // v1.17.4:这 9 个 c*() 是控制台配色的「唯一出口」，主题包只在这里覆盖；
     // 没配置 / 该项没写时返回的仍是原来那套内置色（视觉与旧版一致）。
-    private int cBg() { return conColor("bg", getColor(conDark() ? R.color.shell_bg_dark : R.color.shell_bg_light)); }
-    private int cCard() { return conCardsAlpha(conColor("card", getColor(conDark() ? R.color.shell_card_dark : R.color.shell_card_light))); }
-    private int cText() { return conColor("text", getColor(conDark() ? R.color.text_on_dark : R.color.text_on_light)); }
-    private int cSub() { return conColor("sub", getColor(conDark() ? R.color.sub_on_dark : R.color.sub_on_light)); }
+    private int cBg() { return conColor("bg", m3(M3_SURFACE)); }
+    private int cCard() { return conCardsAlpha(conColor("card", m3(M3_SURFACE_CONTAINER_LOW))); }
+    private int cText() { return conColor("text", m3(M3_ON_SURFACE)); }
+    private int cSub() { return conColor("sub", m3(M3_ON_SURFACE_VARIANT)); }
     private int cGreen() { return conColor("green", getColor(R.color.status_green)); }
-    private int cRed() { return conColor("red", getColor(R.color.status_red)); }
+    private int cRed() { return conColor("red", m3(M3_ERROR)); }
 
     private long deleteRecursive(File f) {
         if (f == null || !f.exists()) return 0;
@@ -1328,7 +1328,7 @@ public class MainActivity extends Activity {
             t.setTypeface(null, android.graphics.Typeface.BOLD);
             guideBody.addView(t, cTop(dp(18)));
 
-            guideBody.addView(cText("权限可以随时在控制台的「权限」页里再改。现在可以进入 DeepSeek Harness 了。",
+            guideBody.addView(cText("权限可以随时在控制台的「权限」页里再改。现在可以进入 DSH 了。",
                     13.5f, cSub(), false), cTop(dp(10)));
 
             // AI 工作区（可选）:沿用原来的选择逻辑
@@ -4188,7 +4188,7 @@ public class MainActivity extends Activity {
             if (engineStartAborted) return;   // v1.13:用户点了「停止」→ 立即收手，别再刷"已等待 N 秒"
             if (healthOk()) { loadHome(); return; }
             long waited = (System.currentTimeMillis() - start) / 1000;
-            setStatus("正在启动 DeepSeek Harness...（已等待 " + waited + " 秒)");
+            setStatus("正在启动 DSH...（已等待 " + waited + " 秒)");
             try { Thread.sleep(1000); } catch (InterruptedException e) { return; }
         }
         if (engineStartAborted) return;   // v1.13:停止后不再走超时兜底（否则会重新 spawn + 重新加载页面）
@@ -4378,8 +4378,8 @@ public class MainActivity extends Activity {
     private volatile boolean conRootOk = false;
     private long conRootProbeTs = 0L;
 
-    private int cLine() { return conColor("line", Color.parseColor(conDark() ? "#232a38" : "#e5e7eb")); }
-    private int cAccent() { return conColor("accent", getColor(R.color.accent_brand)); }
+    private int cLine() { return conColor("line", m3(M3_OUTLINE_VARIANT)); }
+    private int cAccent() { return conColor("accent", m3(M3_PRIMARY)); }
 
     private File payloadDir() { return new File(getFilesDir(), "payload"); }
 
@@ -4577,13 +4577,154 @@ public class MainActivity extends Activity {
         else if (conEnMeta != null) conEnMeta.setText(s);
     }
 
+    // ==================== M3 Expressive 设计令牌 ====================
+    //
+    // 色板：以 DSH 品牌蓝 #4D6BFE 为种子，用 material-color-utilities 的 SchemeContent 生成
+    //       light / dark 两套完整角色（2025 色彩规范：容器更饱和、表面分五级）。
+    // 形状/字阶/动效：照 TokiNote 的 M3 Expressive 体系（Shape.kt / Type.kt / Motion.kt）移植——
+    //       TokiNote 是 Compose，这里没有 Compose/Material 依赖，只能用 drawable + TextView 手写等价物。
+    private static final int M3_SURFACE = 0, M3_ON_SURFACE = 1, M3_SURFACE_VARIANT = 2,
+            M3_ON_SURFACE_VARIANT = 3, M3_OUTLINE = 4, M3_OUTLINE_VARIANT = 5, M3_PRIMARY = 6,
+            M3_ON_PRIMARY = 7, M3_PRIMARY_CONTAINER = 8, M3_ON_PRIMARY_CONTAINER = 9, M3_SECONDARY = 10,
+            M3_SECONDARY_CONTAINER = 11, M3_ON_SECONDARY_CONTAINER = 12, M3_TERTIARY = 13,
+            M3_TERTIARY_CONTAINER = 14, M3_ERROR = 15, M3_ON_ERROR = 16, M3_ERROR_CONTAINER = 17,
+            M3_ON_ERROR_CONTAINER = 18, M3_SURFACE_CONTAINER_LOWEST = 19, M3_SURFACE_CONTAINER_LOW = 20,
+            M3_SURFACE_CONTAINER = 21, M3_SURFACE_CONTAINER_HIGH = 22, M3_SURFACE_CONTAINER_HIGHEST = 23,
+            M3_INVERSE_SURFACE = 24, M3_INVERSE_ON_SURFACE = 25, M3_BRAND = 26;
+
+    private static final int[] M3_LIGHT = {
+            0xFFFBF8FF, 0xFF1A1B24, 0xFFE1E1F4, 0xFF444655, 0xFF747687, 0xFFC4C5D8,
+            0xFF133BD3, 0xFFFFFFFF, 0xFF4766F9, 0xFFFFFFFF, 0xFF4E5A99, 0xFFB6C0FF,
+            0xFF232F6C, 0xFF87139A, 0xFFB244C2, 0xFFBA1A1A, 0xFFFFFFFF, 0xFFFFDAD6,
+            0xFF410002, 0xFFFFFFFF, 0xFFF4F2FF, 0xFFEEEDF9, 0xFFE8E7F3, 0xFFE2E1EE,
+            0xFF2F3039, 0xFFF1EFFC, 0xFF4D6BFE
+    };
+    private static final int[] M3_DARK = {
+            0xFF12131B, 0xFFE2E1EE, 0xFF444655, 0xFFC4C5D8, 0xFF8E8FA1, 0xFF444655,
+            0xFFBAC3FF, 0xFF00208E, 0xFF4261F4, 0xFFFFFFFF, 0xFFBAC3FF, 0xFF2F3B78,
+            0xFFCCD2FF, 0xFFFAABFF, 0xFFAF41BF, 0xFFFFB4AB, 0xFF690005, 0xFF93000A,
+            0xFFFFDAD6, 0xFF0C0E16, 0xFF1A1B24, 0xFF1E1F28, 0xFF282932, 0xFF33343E,
+            0xFFE2E1EE, 0xFF2F3039, 0xFF4D6BFE
+    };
+
+    /** 取一个 M3 颜色角色（跟随控制台深浅方案，而不是系统偏好）。 */
+    private int m3(int role) {
+        int[] t = conDark() ? M3_DARK : M3_LIGHT;
+        return t[Math.max(0, Math.min(t.length - 1, role))];
+    }
+
+    private static int m3Alpha(int color, int alpha) {
+        return (color & 0x00FFFFFF) | ((alpha & 0xFF) << 24);
+    }
+
+    /** Expressive 圆角刻度：比基线 M3 更圆（8/12/18/26/36）。 */
+    private static final float[] M3_SHAPE_SCALE = {8f, 12f, 18f, 26f, 36f};
+
+    /** 旧调用点的内置圆角（8/10/12/14/18）→ M3E 圆角刻度。 */
+    private float m3ShapeRadius(int legacy) {
+        if (legacy <= 8) return 12f;
+        if (legacy <= 10) return 16f;
+        if (legacy <= 12) return 18f;
+        if (legacy <= 14) return 22f;
+        if (legacy <= 18) return M3_SHAPE_SCALE[3];
+        return M3_SHAPE_SCALE[4];
+    }
+
+    /** 主题包写了 radius 就整体覆盖（保持老主题包行为），否则走 M3E 刻度。 */
+    private float m3Radius(int legacy) {
+        ConsoleTheme t = conTheme;
+        return (t == null || t.radius == null) ? m3ShapeRadius(legacy) : t.radius.floatValue();
+    }
+
+    /** 卡片的不对称圆角（TokiNote 的 ExpressiveCardShape：30 / 22 / 30 / 22）。 */
+    private android.graphics.drawable.GradientDrawable cCardShape(int fill) {
+        ConsoleTheme t = conTheme;
+        android.graphics.drawable.GradientDrawable g = new android.graphics.drawable.GradientDrawable();
+        g.setShape(android.graphics.drawable.GradientDrawable.RECTANGLE);
+        g.setColor(fill);
+        if (t != null && t.radius != null) {
+            g.setCornerRadius(dp(Math.round(t.radius.floatValue())));
+        } else {
+            g.setCornerRadii(new float[]{
+                    dp(30), dp(30),   // top-left
+                    dp(22), dp(22),   // top-right
+                    dp(30), dp(30),   // bottom-right
+                    dp(22), dp(22)}); // bottom-left
+        }
+        return g;
+    }
+
+    /** M3 状态层：把形状包一层 bounded ripple（M3 的按下反馈不再靠改底色）。 */
+    private android.graphics.drawable.Drawable m3Ripple(android.graphics.drawable.GradientDrawable shape,
+                                                         int rippleColor, float radiusDp) {
+        android.graphics.drawable.RippleDrawable rd = new android.graphics.drawable.RippleDrawable(
+                android.content.res.ColorStateList.valueOf(rippleColor), shape, null);
+        try { rd.setRadius(dp(Math.round(radiusDp))); } catch (Throwable ignored) {}
+        return rd;
+    }
+
+    /** 列表行的透明 ripple 背景（卡片内的行本来没有底色）。 */
+    private android.graphics.drawable.Drawable m3RowRipple(int rippleColor) {
+        android.graphics.drawable.GradientDrawable g = new android.graphics.drawable.GradientDrawable();
+        g.setColor(0x00000000);
+        g.setCornerRadius(dp(16));
+        return m3Ripple(g, rippleColor, 16f);
+    }
+
+    /** 药丸形（M3 的按钮 / 胶囊形状：半径取 999dp，随高度自适应）。 */
+    private android.graphics.drawable.GradientDrawable cPill(int fill) {
+        android.graphics.drawable.GradientDrawable g = new android.graphics.drawable.GradientDrawable();
+        g.setShape(android.graphics.drawable.GradientDrawable.RECTANGLE);
+        g.setColor(fill);
+        g.setCornerRadius(dp(999));
+        return g;
+    }
+
+    /** 药丸形 + 描边（M3 outlined / 未选中 chip）。 */
+    private android.graphics.drawable.GradientDrawable cPillOutlined(int fill, int strokeW, int stroke) {
+        android.graphics.drawable.GradientDrawable g = cPill(fill);
+        if (strokeW > 0) g.setStroke(dp(strokeW), stroke);
+        return g;
+    }
+
+    /** 指定圆角的纯色形状（列表行 / 分组表面这类中号圆角用）。 */
+    private android.graphics.drawable.GradientDrawable cRound(int fill, float radiusDp) {
+        android.graphics.drawable.GradientDrawable g = new android.graphics.drawable.GradientDrawable();
+        g.setShape(android.graphics.drawable.GradientDrawable.RECTANGLE);
+        g.setColor(fill);
+        g.setCornerRadius(dp(Math.round(radiusDp)));
+        return g;
+    }
+
+    /** M3 字阶：把旧的裸 sp 映射到 expressive type scale，并把 14sp 以上换成 medium 字重。 */
+    private void m3Type(TextView t, float legacySp, boolean bold) {
+        float sp;
+        if (legacySp >= 15f) sp = 16f;
+        else if (legacySp >= 13.2f) sp = 14f;
+        else if (legacySp >= 12.2f) sp = 13f;
+        else if (legacySp >= 11f) sp = 12f;
+        else sp = 11f;
+        t.setTextSize(TypedValue.COMPLEX_UNIT_SP, sp * conFontScale());
+        if (bold) {
+            t.setTypeface(android.graphics.Typeface.create("sans-serif-medium", android.graphics.Typeface.BOLD));
+        } else if (sp >= 14f) {
+            t.setTypeface(android.graphics.Typeface.create("sans-serif-medium", android.graphics.Typeface.NORMAL));
+        }
+        t.setLetterSpacing(sp >= 16f ? 0f : 0.01f);
+        t.setIncludeFontPadding(false);
+    }
+
+    /** M3E 的弹簧感回弹（用于开关/进度这类状态切换）。 */
+    private static android.view.animation.Interpolator m3Spring() {
+        return new android.view.animation.OvershootInterpolator(1.1f);
+    }
+
     // ---------- 通用控件 ----------
     private TextView cText(String s, float sp, int color, boolean bold) {
         TextView t = new TextView(this);
         t.setText(s);
-        t.setTextSize(TypedValue.COMPLEX_UNIT_SP, sp * conFontScale());   // v1.17.4:fontScale
+        m3Type(t, sp, bold);   // v1.17.4:fontScale 仍由 m3Type 内部乘
         t.setTextColor(color);
-        if (bold) t.setTypeface(null, android.graphics.Typeface.BOLD);
         // v1.17.4:mono=true 时日志页整页等宽（日志正文本来就是等宽，这里覆盖页内其余文字）
         if (consolePage == 3 && conMono()) t.setTypeface(android.graphics.Typeface.MONOSPACE);
         return t;
@@ -4594,12 +4735,12 @@ public class MainActivity extends Activity {
         android.graphics.drawable.GradientDrawable g = new android.graphics.drawable.GradientDrawable();
         g.setShape(android.graphics.drawable.GradientDrawable.RECTANGLE);
         g.setColor(fill);
-        g.setCornerRadius(dp(conRadius(radius)));   // v1.17.4:radius 主题项（没写则用调用方内置值）
+        g.setCornerRadius(dp(Math.round(m3Radius(radius))));   // v1.17.4:主题 radius 仍优先，否则 M3E 刻度
         if (strokeW > 0) g.setStroke(dp(strokeW), stroke);
         return g;
     }
 
-    private int cTrack() { return conColor("track", Color.parseColor(conDark() ? "#141b2b" : "#eef1f6")); }
+    private int cTrack() { return conColor("track", m3(M3_SURFACE_CONTAINER_HIGHEST)); }
 
     // ==================== v1.17.4 控制台主题包 · 运行时 ====================
     // 设计稿:tmp-diag/v1173/console-theme-design.md(§7.6 第 1 轮)
@@ -5077,26 +5218,28 @@ public class MainActivity extends Activity {
         Button b = new Button(this);
         b.setAllCaps(false);
         b.setText(label);
-        b.setTextSize(TypedValue.COMPLEX_UNIT_SP, (primary ? 13.5f : 12.5f) * conFontScale());   // v1.17.4:fontScale
+        b.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f * conFontScale());   // M3 label large
+        b.setLetterSpacing(0.01f);
         b.setSingleLine(true);
         b.setEllipsize(android.text.TextUtils.TruncateAt.END);
-        b.setMinWidth(dp(primary ? 96 : 68));
-        b.setMinimumWidth(dp(primary ? 96 : 68));
-        // v1.19.6:高度也要兜底。原来只钉了宽度 -- 父布局高度不够时按钮会被压成
-        // 一条扁色块、文字被裁掉（用户真机反馈："扁扁的，然后也没有文字"）。
-        b.setMinHeight(dp(36));
-        b.setMinimumHeight(dp(36));
-        b.setPadding(dp(16), dp(9), dp(16), dp(9));
+        b.setMinWidth(dp(primary ? 104 : 76));
+        b.setMinimumWidth(dp(primary ? 104 : 76));
+        // v1.19.6 的兜底保留：父布局高度不够时按钮会被压扁、文字被裁掉。
+        b.setMinHeight(dp(44));
+        b.setMinimumHeight(dp(44));
+        b.setPadding(dp(24), dp(11), dp(24), dp(11));
         b.setIncludeFontPadding(false);
+        // M3 平面按钮：层级靠色块而不是投影。
+        try { b.setStateListAnimator(null); } catch (Throwable ignored) {}
         if (primary) {
-            b.setTextColor(Color.WHITE);
-            b.setBackground(cShape(cAccent(), cAccent(), 0, 8));
+            // M3 filled：primary 底 + onPrimary 字 + 药丸形 + 状态层
+            b.setTextColor(m3(M3_ON_PRIMARY));
+            b.setBackground(m3Ripple(cPill(m3(M3_PRIMARY)), m3Alpha(m3(M3_ON_PRIMARY), 0x33), 999f));
         } else {
-            // 次按钮：强调色描边 + 强调色文字（之前用灰底，看着像"禁用"）
-            b.setTextColor(cAccent());
-            // v1.19.6:走 conDark()（控制台方案）,不要用 isDark()（系统偏好）--
-        // 主题指定了 appearance.dark 时两者会相反，底/字就不是一套了。
-        b.setBackground(cShape(conDark() ? 0x1A4D6BFE : 0x144D6BFE, cAccent(), 1, 8));
+            // M3 filled tonal：secondaryContainer 底 + onSecondaryContainer 字
+            b.setTextColor(m3(M3_ON_SECONDARY_CONTAINER));
+            b.setBackground(m3Ripple(cPill(m3(M3_SECONDARY_CONTAINER)),
+                    m3Alpha(m3(M3_ON_SECONDARY_CONTAINER), 0x22), 999f));
         }
         return b;
     }
@@ -5148,9 +5291,16 @@ public class MainActivity extends Activity {
     private void conTogglePaint(TextView t) {
         boolean on = ((Boolean) t.getTag()).booleanValue();
         t.setText(on ? "已启用" : "已关闭");
-        t.setTextColor(on ? cGreen() : cSub());
-        t.setBackground(cShape(on ? (conDark() ? 0x241F9D6B : 0x1A1F9D6B) : 0x00000000,
-                on ? cGreen() : cLine(), 1, 12));
+        if (on) {
+            t.setTextColor(m3(M3_ON_SECONDARY_CONTAINER));
+            t.setBackground(m3Ripple(cPill(m3(M3_SECONDARY_CONTAINER)),
+                    m3Alpha(m3(M3_ON_SECONDARY_CONTAINER), 0x22), 999f));
+        } else {
+            t.setTextColor(m3(M3_ON_SURFACE_VARIANT));
+            t.setBackground(m3Ripple(cPillOutlined(0x00000000, 1, m3(M3_OUTLINE)),
+                    m3Alpha(m3(M3_ON_SURFACE), 0x1A), 999f));
+        }
+        t.setLetterSpacing(0.02f);
     }
 
     private LinearLayout.LayoutParams cTop(int topMargin) {
@@ -5162,7 +5312,7 @@ public class MainActivity extends Activity {
 
     private View cSep(int topMargin) {
         View v = new View(this);
-        v.setBackgroundColor(cLine());
+        v.setBackgroundColor(m3Alpha(cLine(), 0x99));
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, Math.max(1, dp(1)));
         lp.topMargin = cGap(topMargin);   // v1.17.5:compact 时间距减半
@@ -5174,14 +5324,19 @@ public class MainActivity extends Activity {
         LinearLayout left = new LinearLayout(this);
         left.setOrientation(LinearLayout.VERTICAL);
         left.addView(cText(title, 14f, cText(), false));
-        if (sub != null && sub.length() > 0) left.addView(cText(sub, 11f, cSub(), false));
+        if (sub != null && sub.length() > 0) left.addView(cText(sub, 12f, cSub(), false));
         LinearLayout row = new LinearLayout(this);
         row.setOrientation(LinearLayout.HORIZONTAL);
         row.setGravity(Gravity.CENTER_VERTICAL);
-        row.setPadding(0, dp(15), 0, dp(15));
+        row.setPadding(dp(16), dp(15), dp(16), dp(15));
         row.addView(left, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
-        if (value != null && value.length() > 0) row.addView(cText(value, 11f, cSub(), false));
-        row.addView(cText("›", 14f, cSub(), false));
+        if (value != null && value.length() > 0) row.addView(cText(value, 12f, cSub(), false));
+        LinearLayout.LayoutParams chp = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        chp.leftMargin = dp(8);
+        row.addView(cText("›", 16f, m3(M3_PRIMARY), false), chp);
+        row.setBackground(m3Ripple(cRound(m3(M3_SURFACE_CONTAINER), 20),
+                m3Alpha(m3(M3_ON_SURFACE), 0x1F), 20f));
         row.setOnClickListener(new View.OnClickListener() {
             @Override public void onClick(View v) { consolePage = page; renderConsole(); }
         });
@@ -5192,14 +5347,27 @@ public class MainActivity extends Activity {
         LinearLayout row = new LinearLayout(this);
         row.setOrientation(LinearLayout.HORIZONTAL);
         row.setGravity(Gravity.CENTER_VERTICAL);
-        Button back = cButton("‹ 控制台", false);
-        back.setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f);
-        back.setPadding(0, dp(4), dp(8), dp(4));
+        // M3 text button：只有 primary 文字 + 状态层（返回是次级动作，不该铺一块色）
+        Button back = new Button(this);
+        back.setAllCaps(false);
+        back.setText("‹ 控制台");
+        back.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f * conFontScale());
+        back.setLetterSpacing(0.01f);
+        back.setTextColor(m3(M3_PRIMARY));
+        back.setIncludeFontPadding(false);
+        back.setMinHeight(dp(40));
+        back.setMinimumHeight(dp(40));
+        back.setPadding(dp(12), dp(8), dp(16), dp(8));
+        try { back.setStateListAnimator(null); } catch (Throwable ignored) {}
+        back.setBackground(m3Ripple(cRound(0x00000000, 999f), m3Alpha(m3(M3_PRIMARY), 0x22), 999f));
         back.setOnClickListener(new View.OnClickListener() {
             @Override public void onClick(View v) { consolePage = 0; renderConsole(); }
         });
-        row.addView(back);
-        row.addView(cText(title, 12.5f, cSub(), false));
+        LinearLayout.LayoutParams blp = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        blp.rightMargin = dp(8);
+        row.addView(back, blp);
+        row.addView(cText(title, 13f, cSub(), false));
         return row;
     }
 
@@ -5311,8 +5479,9 @@ public class MainActivity extends Activity {
         // ── 状态块：运行环境 + 引擎 合成一块（一眼看清"能不能用 + 下一步做什么"） ──
         LinearLayout card = new LinearLayout(this);
         card.setOrientation(LinearLayout.VERTICAL);
-        card.setBackground(cShape(cCard(), cLine(), 1, 12));
-        card.setPadding(dp(15), dp(13), dp(15), dp(13));
+        card.setBackground(cCardShape(cCard()));
+        card.setPadding(dp(18), dp(16), dp(18), dp(16));
+        card.setClipToOutline(true);
         // v1.19.7:主操作块（环境 + 引擎 + 主按钮 + 重启/停止 + 详情）作为一个**可排序条目**,
         // 不再直接挂到 col 上。它受保护、不可隐藏（hidden 里写 extract / engine 都会被忽略）--
         // 它是「解压 / 启动引擎」的唯一入口，藏了就没法用了。
@@ -5498,9 +5667,11 @@ public class MainActivity extends Activity {
         }
     }
 
-    /** 分组小标题（方案 B 的三组：会话 / 系统 / 诊断）。 */
+    /** 分组小标题（方案 B 的三组：会话 / 系统 / 诊断）。M3E：labelLarge + 字距。 */
     private View cGrpTitle(String s) {
-        return cText(s, 11f, cSub(), true);
+        TextView tv = cText(s, 12f, cSub(), true);
+        tv.setLetterSpacing(0.06f);
+        return tv;
     }
 
     // ==================== v1.19.6:细页面统一版式的构件 ====================
@@ -5514,20 +5685,20 @@ public class MainActivity extends Activity {
     /** 主控台「运行环境」那一行的副标题（refreshConsole 里更新，跟状态块同源）。 */
     private TextView conEnvState = null;
 
-    /** 卡片块：圆角 + 卡片底色 + 与主控台状态块同一套内边距。 */
+    /** 卡片块：M3 surfaceContainerLow + 不对称大圆角（TokiNote ExpressiveCardShape）。 */
     private LinearLayout cCardBox() {
         LinearLayout box = new LinearLayout(this);
         box.setOrientation(LinearLayout.VERTICAL);
-        box.setBackground(cShape(cCard(), cLine(), 1, 12));
-        box.setPadding(dp(15), dp(4), dp(15), dp(4));
+        box.setBackground(cCardShape(cCard()));
+        box.setPadding(dp(18), dp(8), dp(18), dp(8));
+        box.setClipToOutline(true);
         return box;
     }
 
     /** 卡片块内行与行之间的极淡分隔线（v1.19.6:与权限页那条同一套视觉）。 */
     private View cCardSep() {
         View sep = new View(this);
-        sep.setBackgroundColor(cLine());
-        sep.setAlpha(0.5f);
+        sep.setBackgroundColor(m3Alpha(cLine(), 0x99));
         sep.setLayoutParams(new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, Math.max(1, dp(1))));
         return sep;
@@ -5553,21 +5724,25 @@ public class MainActivity extends Activity {
                           View.OnClickListener click) {
         LinearLayout left = new LinearLayout(this);
         left.setOrientation(LinearLayout.VERTICAL);
-        left.addView(cText(title, 13.5f, cText(), false));
-        if (sub != null && sub.length() > 0) left.addView(cText(sub, 11f, cSub(), false));
+        left.addView(cText(title, 14f, cText(), false));
+        if (sub != null && sub.length() > 0) left.addView(cText(sub, 12f, cSub(), false));
         LinearLayout row = new LinearLayout(this);
         row.setOrientation(LinearLayout.HORIZONTAL);
         row.setGravity(Gravity.CENTER_VERTICAL);
-        row.setPadding(0, dp(12), 0, dp(12));
+        row.setMinimumHeight(dp(56));
+        row.setPadding(0, dp(14), 0, dp(14));
         row.addView(left, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
-        if (right != null && right.length() > 0) row.addView(cText(right, 11.5f, rightColor, false));
+        if (right != null && right.length() > 0) row.addView(cText(right, 12f, rightColor, false));
         if (chevron) {
             LinearLayout.LayoutParams clp = new LinearLayout.LayoutParams(
                     ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
             clp.leftMargin = dp(6);
-            row.addView(cText("›", 14f, cSub(), false), clp);
+            row.addView(cText("›", 16f, m3(M3_PRIMARY), false), clp);
         }
-        if (click != null) row.setOnClickListener(click);
+        if (click != null) {
+            row.setBackground(m3RowRipple(m3Alpha(m3(M3_PRIMARY), 0x1F)));
+            row.setOnClickListener(click);
+        }
         return row;
     }
 
@@ -5575,12 +5750,13 @@ public class MainActivity extends Activity {
     private View cCardRowWith(String title, String sub, View right) {
         LinearLayout left = new LinearLayout(this);
         left.setOrientation(LinearLayout.VERTICAL);
-        left.addView(cText(title, 13.5f, cText(), false));
-        if (sub != null && sub.length() > 0) left.addView(cText(sub, 11f, cSub(), false));
+        left.addView(cText(title, 14f, cText(), false));
+        if (sub != null && sub.length() > 0) left.addView(cText(sub, 12f, cSub(), false));
         LinearLayout row = new LinearLayout(this);
         row.setOrientation(LinearLayout.HORIZONTAL);
         row.setGravity(Gravity.CENTER_VERTICAL);
-        row.setPadding(0, dp(12), 0, dp(12));
+        row.setMinimumHeight(dp(56));
+        row.setPadding(0, dp(14), 0, dp(14));
         row.addView(left, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
         LinearLayout.LayoutParams rlp = new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
@@ -5589,10 +5765,10 @@ public class MainActivity extends Activity {
         return row;
     }
 
-    /** 说明段落（11sp 次要色 + 行距）,细页面统一用它写"这一页是干什么的"。 */
+    /** 说明段落（12sp 次要色 + 行距）,细页面统一用它写"这一页是干什么的"。 */
     private View cNote(String s) {
-        TextView tv = cText(s, 11f, cSub(), false);
-        tv.setLineSpacing(dp(2), 1f);
+        TextView tv = cText(s, 12f, cSub(), false);
+        tv.setLineSpacing(dp(3), 1f);
         return tv;
     }
 
@@ -5610,9 +5786,14 @@ public class MainActivity extends Activity {
         LinearLayout row = new LinearLayout(this);
         row.setOrientation(LinearLayout.HORIZONTAL);
         row.setGravity(Gravity.CENTER_VERTICAL);
-        row.setPadding(0, dp(15), 0, dp(15));
+        row.setPadding(dp(16), dp(15), dp(16), dp(15));
         row.addView(left, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
-        row.addView(cText("›", 14f, cSub(), false));
+        LinearLayout.LayoutParams chp = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        chp.leftMargin = dp(8);
+        row.addView(cText("›", 16f, m3(M3_PRIMARY), false), chp);
+        row.setBackground(m3Ripple(cRound(m3(M3_SURFACE_CONTAINER), 20),
+                m3Alpha(m3(M3_ON_SURFACE), 0x1F), 20f));
         row.setOnClickListener(new View.OnClickListener() {
             @Override public void onClick(View v) { conEnvDialog(); }
         });
@@ -6568,7 +6749,7 @@ public class MainActivity extends Activity {
         if ("card".equals(ty)) {
             LinearLayout box = new LinearLayout(this);
             box.setOrientation(LinearLayout.VERTICAL);
-            box.setBackground(cShape(cCard(), 0, 0, conRadius(14)));
+            box.setBackground(cCardShape(cCard()));
             box.setPadding(dp(14), dp(12), dp(14), dp(12));
             conRenderNodes(box, n.children);
             return box;
@@ -6658,7 +6839,7 @@ public class MainActivity extends Activity {
 
     /** 品牌字：长按 = 逃生口（以默认样式打开控制台，防把自己改到点不动）。 */
     private View conBrandView() {
-        TextView tv = cText(t("title.brand", "DEEPSEEK HARNESS"), 10f, cSub(), false);
+        TextView tv = cText(t("title.brand", "DSH"), 10f, cSub(), false);
         tv.setOnLongClickListener(new View.OnLongClickListener() {
             @Override public boolean onLongClick(View v) { conThemeEscapeDialog(); return true; }
         });
@@ -8321,7 +8502,7 @@ public class MainActivity extends Activity {
             if (!consoleVisible) loadHome();
             return;
         }
-        showIndeterminate("正在启动 DeepSeek Harness...");
+        showIndeterminate("正在启动 DSH...");
         starting = true;
         if (engineStartTs == 0L) engineStartTs = System.currentTimeMillis();
         // v1.13:已有一个 node 进程在跑（可能只是还没开始监听端口）→ 「绝不再 spawn 第二个」。
@@ -10698,7 +10879,7 @@ public class MainActivity extends Activity {
     private String conBuildShareText() {
         try {
             File f = conLogFile();
-            String head = "DeepSeek Harness 日志\n"
+            String head = "DSH 日志\n"
                     + "版本 " + conVersionLabel() + "\n"
                     + "端口 " + enginePort + " · " + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new java.util.Date()) + "\n"
                     + "完整日志路径：" + f.getAbsolutePath() + "\n"
@@ -10769,7 +10950,7 @@ public class MainActivity extends Activity {
         try {
             Intent send = new Intent(Intent.ACTION_SEND);
             send.setType("text/plain");
-            send.putExtra(Intent.EXTRA_SUBJECT, "DeepSeek Harness 日志");
+            send.putExtra(Intent.EXTRA_SUBJECT, "DSH 日志");
             send.putExtra(Intent.EXTRA_TEXT, text);
             Intent chooser = Intent.createChooser(send, "分享日志");
             chooser.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);

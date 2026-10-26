@@ -1,3 +1,23 @@
+## v0.2.0（2026-10-26）
+
+- **界面按 Material Design 3 Expressive 重构**（控制台 + WebView 两层）：
+  - 色板：以 DSH 品牌蓝 `#4D6BFE` 为种子，用 material-color-utilities 的 `SchemeContent`
+    生成 light / dark 两套完整角色（primary / secondary / tertiary / error / surface 五级 /
+    container / outline），全局替换原来的 9 个语义色。
+  - 形状：Expressive 圆角刻度 12 / 18 / 22 / 26 / 36；卡片改不对称圆角（30/22/30/22）；
+    按钮与胶囊改药丸形（999dp）；输入框与行容器 16–18dp。
+  - 组件：M3 filled / filled-tonal 按钮 + bounded ripple 状态层；插件开关变胶囊 chip
+    （选中 secondaryContainer / 未选中描边）；卡片容器改 `surfaceContainerLow` + 去描边；
+    列表行 56dp 触达高度；导航行加 ripple 与 primary 箭头；分组标题改 labelLarge 字距。
+  - 字阶：旧裸 sp 映射到 M3 type scale（11/12/13/14/16），14sp 以上用 medium 字重。
+  - WebView：`mobile-patch/mobile.css` 注入 M3E 令牌，并映射到 DSH 前端的
+    `--dsw-alias-*` / `--dsw-radius-*` / `--dsw-elevation-*`；按钮药丸化、卡片 26dp、
+    输入框 18dp、三档 M3 缓动。只覆盖变量与皮肤，不动 DOM 结构。
+  - 设计参考 TokiNote 的 M3 Expressive 体系；DSH 无 Compose / Material 依赖，
+    令牌与组件形态用 Java drawable + CSS 手写实现。
+- **品牌字符串统一为 DSH**：启动页标题、退出确认、日志标题、控制台品牌字、无障碍服务名。
+- 版本号 **0.2.0**（`versionCode` 2）。
+
 ## v0.1.0（2026-10-26）
 
 - **品牌与版本号落定**：App 名称改为 **DSH**；正式版 `versionName=0.1.0`（`versionCode=1`），
