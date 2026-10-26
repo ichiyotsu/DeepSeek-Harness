@@ -5487,8 +5487,8 @@ public class MainActivity extends Activity {
                 ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         chp.leftMargin = dp(8);
         row.addView(cText("›", 16f, m3(M3_PRIMARY), false), chp);
-        row.setBackground(m3Ripple(cRound(m3(M3_SURFACE_CONTAINER), 20),
-                m3Alpha(m3(M3_ON_SURFACE), 0x1F), 20f));
+        row.setBackground(m3Ripple(cRound(m3(M3_SURFACE_CONTAINER), 16),
+                m3Alpha(m3(M3_ON_SURFACE), 0x1F), 16f));
         row.setTag("m3row");
         row.setOnClickListener(new View.OnClickListener() {
             @Override public void onClick(View v) { consolePage = page; renderConsole(); }
@@ -5816,11 +5816,10 @@ public class MainActivity extends Activity {
             int top;
             if (prev == null) top = isGrp ? cGap(20) : cGap(12);
             else if (isGrp) top = cGap(20);
-            else top = prev.startsWith("group.") ? 0 : cGap(12);
+            else top = prev.startsWith("group.") ? cGap(8) : cGap(8);
             col.addView(v, cTop(top));
             prev = id;
         }
-        styleConnectedRows(col);
     }
 
     // ==================== 连接式列表（M3 lists 的圆角规则） ====================
@@ -5992,8 +5991,8 @@ public class MainActivity extends Activity {
                 ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         chp.leftMargin = dp(8);
         row.addView(cText("›", 16f, m3(M3_PRIMARY), false), chp);
-        row.setBackground(m3Ripple(cRound(m3(M3_SURFACE_CONTAINER), 20),
-                m3Alpha(m3(M3_ON_SURFACE), 0x1F), 20f));
+        row.setBackground(m3Ripple(cRound(m3(M3_SURFACE_CONTAINER), 16),
+                m3Alpha(m3(M3_ON_SURFACE), 0x1F), 16f));
         row.setTag("m3row");
         row.setOnClickListener(new View.OnClickListener() {
             @Override public void onClick(View v) { conEnvDialog(); }

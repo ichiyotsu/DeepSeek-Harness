@@ -2,9 +2,9 @@
 
 > 把 DeepSeek Harness（DSH）打包成**可直接安装的 Android APK** —— 装上就能用，还能让 AI **免 Root 真正操作手机**。
 
-![License](https://img.shields.io/github/license/ichiyotsu/DSH)
-![Stars](https://img.shields.io/github/stars/ichiyotsu/DSH)
-![Release](https://img.shields.io/github/v/release/ichiyotsu/DSH)
+![License](https://img.shields.io/github/license/ichiyotsu/DeepSeek-Harness)
+![Stars](https://img.shields.io/github/stars/ichiyotsu/DeepSeek-Harness)
+![Release](https://img.shields.io/github/v/release/ichiyotsu/DeepSeek-Harness)
 
 ## 🆕 最新版本 0.2.2（2026-10-26）
 
@@ -162,7 +162,7 @@
 
 ## 📦 安装
 
-下载 [Releases](https://github.com/ichiyotsu/DSH/releases) 里的 APK 安装即可：
+下载 [Releases](https://github.com/ichiyotsu/DeepSeek-Harness/releases) 里的 APK 安装即可：
 
 - **`DSH-0.1.0.apk`（正式版，推荐）**：包名 `com.deepseek.harness`（端口 3080），日常用这一套
 - **`DSH-0.1.1-beta.apk`（共存版 / 测试版）**：包名 `com.deepseek.harness.beta`（端口 3082），与正式版完全独立、可同时安装；数据独立在 `/sdcard/DeepSeekHarnessLite/`，API Key 需单独填
